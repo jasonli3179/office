@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.office.mapper.AutoExcelMapper">
+
+    <select id="getColumnAndComment" resultType="com.office.domain.ColumnParam">
+        SELECT
+	      COLUMN_NAME as columnName,
+	      COLUMN_COMMENT as columnComment
+        FROM
+	      INFORMATION_SCHEMA.COLUMNS
+        WHERE
+	      table_name = ${tableName}
+	      AND table_schema = 'mrli'
+    </select>
+
+    <!--<select id="getDict" resultMap="mapResultMap" >-->
+        <!--select-->
+          <!--code as value,-->
+          <!--CONCAT(type,codeName) as key-->
+        <!--from-->
+          <!--insured_dict-->
+        <!--where-->
+          <!--insured='report'-->
+
+    <!--</select>-->
+
+    <!--自定义返回map-->
+    <resultMap id="mapResultMap" type="hashmap">
+        <result property="key" column="key" jdbcType="VARCHAR" javaType="java.lang.String" />
+        <result property="value" column="value" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+</mapper>
