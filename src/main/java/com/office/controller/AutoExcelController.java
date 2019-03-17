@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +54,7 @@ public class AutoExcelController {
     @PostMapping("/autoImport")
     @ResponseBody
     @Transactional(rollbackFor = Exception.class)
-    public String autoImport(MultipartFile file, Integer headBegin, Integer end, Integer sheetNum,String tableName) throws Exception {
+    public String autoImport(MultipartFile file, Integer headBegin, Integer end, Integer sheetNum, String tableName) throws Exception {
         //序号起始位置减一变下标
         headBegin--;
         end--;
@@ -156,10 +159,91 @@ public class AutoExcelController {
 
     /**
      * 自定义过滤字符串
+     *
      * @param str
      * @return
      */
-    public String stringFilter(String str){
+    public String stringFilter(String str) {
         return str.trim();
     }
+
+
+    /**
+     * 半自动导出Excel
+     *
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/autoExport")
+    @ResponseBody
+    @Transactional(rollbackFor = Exception.class)
+    public String autoImport(HttpServletResponse response) throws Exception {
+        int sheetNum = 0;
+        int headNum = 0;
+        String tableName = "tableName";
+
+
+        //获取数据库字段名和汉化
+        List<ColumnParam> cac = autoExcelMapper.getColumnAndComment(tableName);
+
+        //字段名对应顺序
+        List<ColumnParam> columnNameList = new ArrayList<>(cac.size());
+
+        //填充excel的数据
+        List<Map<String, String>> list = new ArrayList<>();
+
+
+        InputStream in = this.getClass().getResourceAsStream("/templates/----------------.xls");
+        //流转MultipartFile
+        MultipartFile file = new MockMultipartFile("----------------.xls.xls", "----------------.xls.xls", "", in);
+
+        Workbook wb = null;
+        if (this.isExcel2007(file.getOriginalFilename())) {
+            wb = new XSSFWorkbook(file.getInputStream());
+        } else {
+            wb = new HSSFWorkbook(file.getInputStream());
+        }
+
+        Sheet sheet = wb.getSheetAt(sheetNum);
+
+        //获取表头行
+        Row titleRow = sheet.getRow(headNum);
+
+        //excel有效数据列数
+        int columnNum = 0;
+
+        //确定excel头部类型字段对应的表字段顺序
+        for (int x = 0; true; x++) {
+            //过滤后的单元格内容
+            String titleComment = this.stringFilter(String.valueOf(getValue(titleRow, x)));
+            //判断若到行末尾，则终止
+            if ("".equals(titleComment)) {
+                break;
+            }
+            //获取注释对应的字段名
+            for (int y = 0; y < cac.size(); y++) {
+                ColumnParam param = cac.get(y);
+                //判断若表头注释和数据库注释相似
+                if (titleComment.contains(param.getColumnComment()) || param.getColumnComment().contains(titleComment)) {
+                    //顺序添加
+                    columnNameList.add(new ColumnParam(titleComment, param.getColumnName()));
+                    columnNum++;
+                }
+            }
+        }
+
+        //遍历数据
+        for (int x = 0; x < list.size(); x++) {
+
+        }
+
+
+        OutputStream output = response.getOutputStream();
+        response.reset();
+        response.setHeader("Content-disposition", "attachment; filename=file.xls");
+        response.setContentType("application/msexcel");
+        wb.write(output);
+        output.close();
+    }
+
 }

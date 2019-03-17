@@ -16,6 +16,8 @@ public class ColumnParam {
      */
     private String columnName;
 
+
+
     public ColumnParam(String columnComment, String columnName) {
         this.columnComment = columnComment;
         this.columnName = columnName;
