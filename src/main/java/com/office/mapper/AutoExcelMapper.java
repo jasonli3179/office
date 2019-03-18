@@ -16,6 +16,5 @@ public interface AutoExcelMapper {
      */
     List<ColumnParam> getColumnAndComment(@Param("tableName") String tableName);
 
-    Map<String,String> getDict();
 
 }

@@ -5,6 +5,7 @@ import com.office.mapper.AutoExcelMapper;
 import com.office.mapper.GgRecruitmentinformationDao;
 import com.office.util.IdWorker;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -186,7 +187,7 @@ public class AutoExcelController {
         //获取数据库字段名和汉化
         List<ColumnParam> cac = autoExcelMapper.getColumnAndComment(tableName);
 
-        //字段名对应顺序
+        //字段名excel对应顺序
         List<ColumnParam> columnNameList = new ArrayList<>(cac.size());
 
         //填充excel的数据
@@ -235,6 +236,17 @@ public class AutoExcelController {
         //遍历数据
         for (int x = 0; x < list.size(); x++) {
 
+            //一条正文数据
+            Map<String,String> map=list.get(x);
+
+            //获取正文行
+            Row row=sheet.getRow(headNum+1);
+
+            //循环插入excel所列字段
+            for(int y=0;y<columnNameList.size();y++){
+                Cell cell=row.createCell(y);
+                cell.setCellValue(map.get(columnNameList.get(y).getColumnName()));
+            }
         }
 
 
