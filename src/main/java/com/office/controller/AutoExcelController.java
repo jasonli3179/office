@@ -62,7 +62,7 @@ public class AutoExcelController {
         sheetNum--;
 
         //获取指定表名的所有字段名和注释
-        List<ColumnParam> cac = autoExcelMapper.getColumnAndComment("'" + tableName + "'");
+        List<ColumnParam> cac = autoExcelMapper.getColumnAndComment(tableName);
 
         //字段名对应顺序
         List<ColumnParam> columnNameList = new ArrayList<>(cac.size());
@@ -215,7 +215,7 @@ public class AutoExcelController {
         int columnNum = 0;
 
         //确定excel头部类型字段对应的表字段顺序
-        for (int x = 0; true; x++) {
+        for (int x = 1; true; x++) {
             //过滤后的单元格内容
             String titleComment = this.stringFilter(String.valueOf(getValue(titleRow, x)));
             //判断若到行末尾，则终止
@@ -233,19 +233,25 @@ public class AutoExcelController {
                 }
             }
         }
+        //序号
+        int index=1;
 
         //遍历数据
         for (int x = 0; x < list.size(); x++) {
 
             //一条正文数据
-            Map<String,String> map=list.get(x);
+            Map<String, String> map = list.get(x);
 
             //获取正文行
-            Row row=sheet.getRow(headNum+1);
+            Row row = sheet.getRow(headNum + 1);
 
-            //循环插入excel所列字段
-            for(int y=0;y<columnNameList.size();y++){
-                Cell cell=row.createCell(y);
+            //序号单元格
+            Cell indexCell = row.createCell(0);
+            indexCell.setCellValue(index++);
+
+            //循环插入excel所列字段一行
+            for (int y = 1; y < columnNameList.size(); y++) {
+                Cell cell = row.createCell(y);
                 cell.setCellValue(map.get(columnNameList.get(y).getColumnName()));
             }
         }
