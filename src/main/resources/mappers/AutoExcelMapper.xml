@@ -11,7 +11,7 @@
         FROM
 	      INFORMATION_SCHEMA.COLUMNS
         WHERE
-	      table_name = ${tableName}
+	      table_name in (${tableName})
 	      AND table_schema = 'mrli'
     </select>
 

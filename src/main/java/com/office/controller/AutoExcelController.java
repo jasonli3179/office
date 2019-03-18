@@ -178,19 +178,20 @@ public class AutoExcelController {
     @PostMapping("/autoExport")
     @ResponseBody
     @Transactional(rollbackFor = Exception.class)
-    public String autoImport(HttpServletResponse response) throws Exception {
+    public void autoImport(HttpServletResponse response) throws Exception {
         int sheetNum = 0;
         int headNum = 0;
+        //多个表则逗号分隔
         String tableName = "tableName";
 
 
-        //获取数据库字段名和汉化
+        //获取数据库字段名和汉化*
         List<ColumnParam> cac = autoExcelMapper.getColumnAndComment(tableName);
 
         //字段名excel对应顺序
         List<ColumnParam> columnNameList = new ArrayList<>(cac.size());
 
-        //填充excel的数据
+        //填充excel的数据*
         List<Map<String, String>> list = new ArrayList<>();
 
 
