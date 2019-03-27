@@ -48,7 +48,7 @@ public class AutoExcelController {
      * @param headBegin Excel表头起始行
      * @param end       数据结束行
      * @param sheetNum  sheet表索引
-     * @param tableName 导入数据库表名
+     * @param tableName 导入数据库表名，逗号分隔
      * @return
      * @throws Exception
      */
@@ -116,6 +116,19 @@ public class AutoExcelController {
                     //过滤后的单元格内容
                     String intention = this.stringFilter(String.valueOf(getValue(row, z)));
 
+                    //若单元格值为空则跳过
+                    if(intention==null || intention.equals("")){
+                        continue;
+                    }
+
+                    if ("zd2".equals(String.valueOf(getValue(markRow, z)))) {
+                        //判断对应的标记单元格是否有“字典”标识
+                        intention = "(select townTownCode from agencies where townTownName like '%" + intention + "%' limit 1)";
+                        insertMap.put(columnNameList.get(z).getColumnName(), intention);
+                        continue;
+                    }
+
+
                     //判断对应的标记单元格是否有“字典”标识
                     if ("zd".equals(String.valueOf(getValue(markRow, z)))) {
                         intention = "(select code from insured_dict where insured='report' and type='" + columnNameList.get(z).getColumnName() + "' and codeName like '%" + intention + "%' limit 1)";
@@ -124,12 +137,12 @@ public class AutoExcelController {
                         insertMap.put(columnNameList.get(z).getColumnName(), "'" + intention + "'");
                     }
                 }
-
                 //主键id
                 Long id = IdWorker.getInstance().nextId();
                 insertMap.put("id", id);
 
                 ggRecruitmentinformationDao.insert(insertMap);
+
 
             }
         } catch (Exception e) {
@@ -169,100 +182,100 @@ public class AutoExcelController {
     }
 
 
-    /**
-     * 半自动导出Excel
-     *
-     * @return
-     * @throws Exception
-     */
-    @PostMapping("/autoExport")
-    @ResponseBody
-    @Transactional(rollbackFor = Exception.class)
-    public void autoImport(HttpServletResponse response) throws Exception {
-        int sheetNum = 0;
-        int headNum = 0;
-        //多个表则逗号分隔
-        String tableName = "tableName";
-
-
-        //获取数据库字段名和汉化*
-        List<ColumnParam> cac = autoExcelMapper.getColumnAndComment(tableName);
-
-        //字段名excel对应顺序
-        List<ColumnParam> columnNameList = new ArrayList<>(cac.size());
-
-        //填充excel的数据*
-        List<Map<String, String>> list = new ArrayList<>();
-
-
-        InputStream in = this.getClass().getResourceAsStream("/templates/----------------.xls");
-        //流转MultipartFile
-        MultipartFile file = new MockMultipartFile("----------------.xls.xls", "----------------.xls.xls", "", in);
-
-        Workbook wb = null;
-        if (this.isExcel2007(file.getOriginalFilename())) {
-            wb = new XSSFWorkbook(file.getInputStream());
-        } else {
-            wb = new HSSFWorkbook(file.getInputStream());
-        }
-
-        Sheet sheet = wb.getSheetAt(sheetNum);
-
-        //获取表头行
-        Row titleRow = sheet.getRow(headNum);
-
-        //excel有效数据列数
-        int columnNum = 0;
-
-        //确定excel头部类型字段对应的表字段顺序
-        for (int x = 1; true; x++) {
-            //过滤后的单元格内容
-            String titleComment = this.stringFilter(String.valueOf(getValue(titleRow, x)));
-            //判断若到行末尾，则终止
-            if ("".equals(titleComment)) {
-                break;
-            }
-            //获取注释对应的字段名
-            for (int y = 0; y < cac.size(); y++) {
-                ColumnParam param = cac.get(y);
-                //判断若表头注释和数据库注释相似
-                if (titleComment.contains(param.getColumnComment()) || param.getColumnComment().contains(titleComment)) {
-                    //顺序添加
-                    columnNameList.add(new ColumnParam(titleComment, param.getColumnName()));
-                    columnNum++;
-                }
-            }
-        }
-        //序号
-        int index=1;
-
-        //遍历数据
-        for (int x = 0; x < list.size(); x++) {
-
-            //一条正文数据
-            Map<String, String> map = list.get(x);
-
-            //获取正文行
-            Row row = sheet.getRow(headNum + 1);
-
-            //序号单元格
-            Cell indexCell = row.createCell(0);
-            indexCell.setCellValue(index++);
-
-            //循环插入excel所列字段一行
-            for (int y = 1; y < columnNameList.size(); y++) {
-                Cell cell = row.createCell(y);
-                cell.setCellValue(map.get(columnNameList.get(y).getColumnName()));
-            }
-        }
-
-
-        OutputStream output = response.getOutputStream();
-        response.reset();
-        response.setHeader("Content-disposition", "attachment; filename=file.xls");
-        response.setContentType("application/msexcel");
-        wb.write(output);
-        output.close();
-    }
+//    /**
+//     * 半自动导出Excel
+//     *
+//     * @return
+//     * @throws Exception
+//     */
+//    @PostMapping("/autoExport")
+//    @ResponseBody
+//    @Transactional(rollbackFor = Exception.class)
+//    public void autoImport(HttpServletResponse response) throws Exception {
+//        int sheetNum = 0;
+//        int headNum = 0;
+//        //多个表则逗号分隔
+//        String tableName = "tableName";
+//
+//
+//        //获取数据库字段名和汉化*
+//        List<ColumnParam> cac = autoExcelMapper.getColumnAndComment(tableName);
+//
+//        //字段名excel对应顺序
+//        List<ColumnParam> columnNameList = new ArrayList<>(cac.size());
+//
+//        //填充excel的数据*
+//        List<Map<String, String>> list = new ArrayList<>();
+//
+//
+//        InputStream in = this.getClass().getResourceAsStream("/templates/----------------.xls");
+//        //流转MultipartFile
+//        MultipartFile file = new MockMultipartFile("----------------.xls.xls", "----------------.xls.xls", "", in);
+//
+//        Workbook wb = null;
+//        if (this.isExcel2007(file.getOriginalFilename())) {
+//            wb = new XSSFWorkbook(file.getInputStream());
+//        } else {
+//            wb = new HSSFWorkbook(file.getInputStream());
+//        }
+//
+//        Sheet sheet = wb.getSheetAt(sheetNum);
+//
+//        //获取表头行
+//        Row titleRow = sheet.getRow(headNum);
+//
+//        //excel有效数据列数
+//        int columnNum = 0;
+//
+//        //确定excel头部类型字段对应的表字段顺序
+//        for (int x = 1; true; x++) {
+//            //过滤后的单元格内容
+//            String titleComment = this.stringFilter(String.valueOf(getValue(titleRow, x)));
+//            //判断若到行末尾，则终止
+//            if ("".equals(titleComment)) {
+//                break;
+//            }
+//            //获取注释对应的字段名
+//            for (int y = 0; y < cac.size(); y++) {
+//                ColumnParam param = cac.get(y);
+//                //判断若表头注释和数据库注释相似
+//                if (titleComment.contains(param.getColumnComment()) || param.getColumnComment().contains(titleComment)) {
+//                    //顺序添加
+//                    columnNameList.add(new ColumnParam(titleComment, param.getColumnName()));
+//                    columnNum++;
+//                }
+//            }
+//        }
+//        //序号
+//        int index=1;
+//
+//        //遍历数据
+//        for (int x = 0; x < list.size(); x++) {
+//
+//            //一条正文数据
+//            Map<String, String> map = list.get(x);
+//
+//            //获取正文行
+//            Row row = sheet.getRow(headNum + 1);
+//
+//            //序号单元格
+//            Cell indexCell = row.createCell(0);
+//            indexCell.setCellValue(index++);
+//
+//            //循环插入excel所列字段一行
+//            for (int y = 1; y < columnNameList.size(); y++) {
+//                Cell cell = row.createCell(y);
+//                cell.setCellValue(map.get(columnNameList.get(y).getColumnName()));
+//            }
+//        }
+//
+//
+//        OutputStream output = response.getOutputStream();
+//        response.reset();
+//        response.setHeader("Content-disposition", "attachment; filename=file.xls");
+//        response.setContentType("application/msexcel");
+//        wb.write(output);
+//        output.close();
+//    }
 
 }
