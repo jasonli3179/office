@@ -12,7 +12,7 @@
 	      INFORMATION_SCHEMA.COLUMNS
         WHERE
 	      table_name in (${tableName})
-	      AND table_schema = 'lpzhrs'
+	      AND table_schema = ${schemaName}
     </select>
 
     <!--<select id="getDict" resultMap="mapResultMap" >-->

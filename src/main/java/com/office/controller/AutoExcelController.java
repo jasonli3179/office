@@ -49,20 +49,21 @@ public class AutoExcelController {
      * @param end       数据结束行
      * @param sheetNum  sheet表索引
      * @param tableName 导入数据库表名，逗号分隔
+     * @param schemaName 数据库名称
      * @return
      * @throws Exception
      */
     @PostMapping("/autoImport")
     @ResponseBody
     @Transactional(rollbackFor = Exception.class)
-    public String autoImport(MultipartFile file, Integer headBegin, Integer end, Integer sheetNum, String tableName) throws Exception {
+    public String autoImport(MultipartFile file, Integer headBegin, Integer end, Integer sheetNum, String tableName,String schemaName) throws Exception {
         //序号起始位置减一变下标
         headBegin--;
         end--;
         sheetNum--;
 
         //获取指定表名的所有字段名和注释
-        List<ColumnParam> cac = autoExcelMapper.getColumnAndComment(tableName);
+        List<ColumnParam> cac = autoExcelMapper.getColumnAndComment(tableName,schemaName);
 
         //字段名对应顺序
         List<ColumnParam> columnNameList = new ArrayList<>(cac.size());
