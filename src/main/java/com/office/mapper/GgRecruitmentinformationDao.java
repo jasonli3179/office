@@ -8,7 +8,7 @@ import java.util.Map;
 @Mapper
 public interface GgRecruitmentinformationDao {
 
-	Integer insert(@Param("map") Map<String,Object> map);
+	Integer insert(@Param("map") Map<String,Object> map,@Param("tableName") String tableName);
 
 
 

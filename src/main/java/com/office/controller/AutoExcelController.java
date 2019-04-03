@@ -46,24 +46,26 @@ public class AutoExcelController {
      *
      * @param file      Excel文件
      * @param headBegin Excel表头起始行
-     * @param end       数据结束行
      * @param sheetNum  sheet表索引
-     * @param tableName 导入数据库表名，逗号分隔
-     * @param schemaName 数据库名称
+     * @param tableName 导入数据库表名
+     * @param schemaName 数据库名
      * @return
      * @throws Exception
      */
     @PostMapping("/autoImport")
     @ResponseBody
     @Transactional(rollbackFor = Exception.class)
-    public String autoImport(MultipartFile file, Integer headBegin, Integer end, Integer sheetNum, String tableName,String schemaName) throws Exception {
+    public String autoImport(MultipartFile file, Integer headBegin, Integer sheetNum, String tableName,String schemaName) throws Exception {
+
+        //从excel读取数据总数
+        int dataNum=0;
+
         //序号起始位置减一变下标
         headBegin--;
-        end--;
         sheetNum--;
 
         //获取指定表名的所有字段名和注释
-        List<ColumnParam> cac = autoExcelMapper.getColumnAndComment(tableName,schemaName);
+        List<ColumnParam> cac = autoExcelMapper.getColumnAndComment("'"+tableName+"'","'"+schemaName+"'");
 
         //字段名对应顺序
         List<ColumnParam> columnNameList = new ArrayList<>(cac.size());
@@ -107,11 +109,16 @@ public class AutoExcelController {
             Row markRow = sheet.getRow(headBegin - 1);
 
             //数据导入
-            for (int i = headBegin + 1; i <= end; i++) {
+            for (int i = headBegin + 1; true; i++) {
 
                 Map<String, Object> insertMap = new HashMap<>();
 
                 Row row = sheet.getRow(i);//获取索引为i的行
+
+                //判断是否到最后一条
+                if(row==null){
+                    break;
+                }
 
                 for (int z = 0; z < columnNum; z++) {
                     //过滤后的单元格内容
@@ -122,15 +129,15 @@ public class AutoExcelController {
                         continue;
                     }
 
-                    if ("zd2".equals(String.valueOf(getValue(markRow, z)))) {
-                        //判断对应的标记单元格是否有“字典”标识
+                    //agencies字典表
+                    if ("a".equals(String.valueOf(getValue(markRow, z)))) {
                         intention = "(select townTownCode from agencies where townTownName like '%" + intention + "%' limit 1)";
                         insertMap.put(columnNameList.get(z).getColumnName(), intention);
                         continue;
                     }
 
-
                     //判断对应的标记单元格是否有“字典”标识
+                    //insured_dict字典表
                     if ("zd".equals(String.valueOf(getValue(markRow, z)))) {
                         intention = "(select code from insured_dict where insured='report' and type='" + columnNameList.get(z).getColumnName() + "' and codeName like '%" + intention + "%' limit 1)";
                         insertMap.put(columnNameList.get(z).getColumnName(), intention);
@@ -142,20 +149,21 @@ public class AutoExcelController {
                 Long id = IdWorker.getInstance().nextId();
                 insertMap.put("id", id);
 
-                ggRecruitmentinformationDao.insert(insertMap);
+                ggRecruitmentinformationDao.insert(insertMap,tableName);
 
+                dataNum++;
 
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return "ERROR";
+            return "ERROR---------"+dataNum;
         } finally {
             if (wb != null) {
                 wb.close();
             }
         }
 
-        return "BINGO";
+        return "BINGO---------"+dataNum;
 
     }
 

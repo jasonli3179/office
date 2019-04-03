@@ -11,7 +11,7 @@
         FROM
 	      INFORMATION_SCHEMA.COLUMNS
         WHERE
-	      table_name in (${tableName})
+	      table_name= ${tableName}
 	      AND table_schema = ${schemaName}
     </select>
 
