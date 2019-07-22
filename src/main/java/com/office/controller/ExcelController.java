@@ -1,25 +1,18 @@
 package com.office.controller;
 
-import com.office.domain.GgRecruitmentinformation;
-import com.office.mapper.GgRecruitmentinformationDao;
+import com.office.mapper.insertMapper;
 import com.office.service.DictService;
 import com.office.service.ExcelServiceXLS;
 import com.office.service.ExcelServiceXLSX;
-import com.office.util.IdWorker;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.*;
 
 /**
  * Excel表格操作
@@ -38,7 +31,7 @@ public class ExcelController {
 
 
     @Autowired
-    private GgRecruitmentinformationDao ggRecruitmentinformationDao;
+    private insertMapper ggRecruitmentinformationDao;
 
     private SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
 
