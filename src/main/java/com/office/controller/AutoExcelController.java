@@ -2,7 +2,7 @@ package com.office.controller;
 
 import com.office.domain.ColumnParam;
 import com.office.mapper.AutoExcelMapper;
-import com.office.mapper.insertMapper;
+import com.office.mapper.InsertMapper;
 import com.office.util.IdWorker;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -33,7 +33,7 @@ public class AutoExcelController {
     @Autowired
     private AutoExcelMapper autoExcelMapper;
     @Autowired
-    private insertMapper insertMapper;
+    private InsertMapper insertMapper;
 
 
     private SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
@@ -156,7 +156,7 @@ public class AutoExcelController {
                 //主键id
                 Long id = IdWorker.getInstance().nextId();
                 insertMap.put("id", id);
-                insertMap.put("personnelcategory", "'1'");
+                insertMap.put("personnelcategory", "'1'");//添加字符串类型参数需要自行添加单引号
                 insertMap.put("departcategory", "'1'");
                 insertMap.put("phasetime", "'2019-07-16'");
                 insertMapper.insert(insertMap,tableName);

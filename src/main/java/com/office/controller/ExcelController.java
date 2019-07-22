@@ -1,6 +1,6 @@
 package com.office.controller;
 
-import com.office.mapper.insertMapper;
+import com.office.mapper.InsertMapper;
 import com.office.service.DictService;
 import com.office.service.ExcelServiceXLS;
 import com.office.service.ExcelServiceXLSX;
@@ -31,7 +31,7 @@ public class ExcelController {
 
 
     @Autowired
-    private insertMapper ggRecruitmentinformationDao;
+    private InsertMapper insertMapper;
 
     private SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
 
